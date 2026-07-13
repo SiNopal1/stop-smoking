@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '../../lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '../../lib/supabase';
 
 export default function Register() {
   const router = useRouter();
@@ -31,6 +31,9 @@ export default function Register() {
       options: {
         data: {
           full_name: formData.fullName,
+          fullName: formData.fullName,
+          name: formData.fullName,
+          nama: formData.fullName,
           username: formData.username,
           last_smoke: lastSmokeISO
         }

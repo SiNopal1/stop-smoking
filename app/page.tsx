@@ -2,8 +2,6 @@ import Link from 'next/link';
 
 export default function LandingPage() {
   return (
-    <html>
-    <body>
     <main style={{ padding: '2rem' }}>
       <h1>Selamat Datang di Aplikasi Tracker</h1>
       <p>Silakan pilih tindakan di bawah ini:</p>
@@ -16,7 +14,5 @@ export default function LandingPage() {
         </li>
       </ul>
     </main>
-    </body>
-    </html>
   );
 }
