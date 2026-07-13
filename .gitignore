@@ -1,0 +1,7 @@
+# Dependency folders (Ini yang melarang node_modules ikut)
+node_modules/
+
+# Local env files (Ini yang melarang file .env kamu ikut)
+.env*.local
+.env
+.next/
