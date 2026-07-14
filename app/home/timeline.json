@@ -1,0 +1,68 @@
+[
+  {
+    "id": "20m",
+    "label": "20 menit",
+    "text": "Tekanan darah dan denyut nadi mulai menurun kembali ke tingkat normal. Sirkulasi darah di tangan dan kaki juga mulai membaik.",
+    "thresholdMs": 1200000
+  },
+  {
+    "id": "8h",
+    "label": "8 jam",
+    "text": "Kadar karbon monoksida dalam darah berkurang hingga setengahnya, sementara kadar oksigen kembali normal. Risiko serangan jantung mulai menurun.",
+    "thresholdMs": 28800000
+  },
+  {
+    "id": "24h",
+    "label": "24 jam (1 hari)",
+    "text": "Karbon monoksida telah sepenuhnya hilang dari tubuh. Paru-paru mulai membersihkan lendir dan sisa-sisa kotoran akibat merokok.",
+    "thresholdMs": 86400000
+  },
+  {
+    "id": "48h",
+    "label": "48 jam (2 hari)",
+    "text": "Nikotin telah benar-benar hilang dari tubuh. Indra pengecap dan penciuman meningkat secara drastis.",
+    "thresholdMs": 172800000
+  },
+  {
+    "id": "72h",
+    "label": "72 jam (3 hari)",
+    "text": "Tabung bronkial di paru-paru mulai rileks, membuat pernapasan menjadi lebih lega. Energi tubuh terasa meningkat.",
+    "thresholdMs": 259200000
+  },
+  {
+    "id": "2w",
+    "label": "2 hingga 12 minggu",
+    "text": "Sirkulasi darah di seluruh tubuh membaik secara signifikan. Fungsi paru-paru meningkat hingga 10%.",
+    "thresholdMs": 1209600000
+  },
+  {
+    "id": "3m",
+    "label": "3 hingga 9 bulan",
+    "text": "Gejala batuk, sesak napas, dan masalah pernapasan berkurang secara drastis. Silia (rambut halus) di paru-paru telah tumbuh kembali dan berfungsi optimal untuk melawan infeksi.",
+    "thresholdMs": 7776000000
+  },
+  {
+    "id": "1y",
+    "label": "1 tahun",
+    "text": "Risiko terkena penyakit jantung koroner menurun hingga setengah (50%) dibandingkan dengan seseorang yang masih merokok.",
+    "thresholdMs": 31536000000
+  },
+  {
+    "id": "5y",
+    "label": "5 tahun",
+    "text": "Risiko terkena stroke menurun drastis dan dalam banyak kasus menjadi sama dengan seseorang yang tidak pernah merokok.",
+    "thresholdMs": 157680000000
+  },
+  {
+    "id": "10y",
+    "label": "10 tahun",
+    "text": "Risiko kematian akibat kanker paru-paru berkurang hingga setengahnya. Risiko kanker mulut, tenggorokan, kerongkongan, kandung kemih, dan pankreas juga menurun.",
+    "thresholdMs": 315360000000
+  },
+  {
+    "id": "15y",
+    "label": "15 tahun",
+    "text": "Risiko serangan jantung dan stroke kini sama persis dengan seseorang yang tidak pernah merokok sepanjang hidupnya.",
+    "thresholdMs": 473040000000
+  }
+]

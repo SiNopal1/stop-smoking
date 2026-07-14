@@ -4,16 +4,37 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
+// Impor data dari berkas JSON eksternal
+import timelineBenefits from './timeline.json';
+import dailyContent from './content.json';
+
 export default function Home() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // State baru untuk informasi tambahan
+  // State asli dari kamu
   const [lastSmokeDate, setLastSmokeDate] = useState<string | null>(null);
   const [dailyExpense, setDailyExpense] = useState<number>(30000);
   const [todayDate, setTodayDate] = useState<string>('');
+
+  // State backend JSON dari tahap sebelumnya
+  const [challenge, setChallenge] = useState<string>('Tidak ada challenge hari ini.');
+  const [motivation, setMotivation] = useState<string>('Tetap semangat!');
+  const [totalMsElapsed, setTotalMsElapsed] = useState<number>(0);
+
+  // --- STATE BARU UNTUK REAL-TIME STREAK & MONEY SAVED ---
+  const [rawLastSmokeDate, setRawLastSmokeDate] = useState<Date | null>(null);
+  const [moneySaved, setMoneySaved] = useState<number>(0);
+  const [streak, setStreak] = useState({
+    years: 0,
+    months: 0,
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -36,7 +57,7 @@ export default function Home() {
           setProfile(profileData);
         }
 
-        // 2. Tarik informasi tanggal terakhir merokok (tabel public.last_smoke)
+        // 2. Tarik informasi tanggal terakhir merokok
         const { data: smokeData } = await supabase
           .from('last_smoke')
           .select('last_smoke')
@@ -44,8 +65,10 @@ export default function Home() {
           .maybeSingle();
 
         if (smokeData?.last_smoke) {
-          // Format tanggal agar lebih manusiawi (Contoh: 14 Juli 2026)
-          const formattedSmokeDate = new Date(smokeData.last_smoke).toLocaleDateString('id-ID', {
+          const smokeDateObj = new Date(smokeData.last_smoke);
+          setRawLastSmokeDate(smokeDateObj); // Simpan objek date untuk ticker real-time
+          
+          const formattedSmokeDate = smokeDateObj.toLocaleDateString('id-ID', {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
@@ -53,23 +76,25 @@ export default function Home() {
           setLastSmokeDate(formattedSmokeDate);
         }
 
-        // 3. Ambil pengeluaran rokok per hari dari Local Storage (Default: Rp30.000)
+        // 3. Ambil pengeluaran rokok per hari dari Local Storage
         const localExpense = localStorage.getItem('daily_smoke_expense');
         if (localExpense) {
           setDailyExpense(Number(localExpense));
         } else {
-          // Set default ke local storage jika belum ada
           localStorage.setItem('daily_smoke_expense', '30000');
         }
 
-        // 4. Ambil tanggal hari ini secara client-side
-        const today = new Date().toLocaleDateString('id-ID', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        });
-        setTodayDate(today);
+        // 4. Logika Konten Harian (Day of Year)
+        const today = new Date();
+        const startOfYear = new Date(today.getFullYear(), 0, 0);
+        const diffTime = today.getTime() - startOfYear.getTime();
+        const dayOfYear = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const dayKey = dayOfYear.toString();
+
+        if ((dailyContent as any)[dayKey]) {
+          setChallenge((dailyContent as any)[dayKey].challenge);
+          setMotivation((dailyContent as any)[dayKey].motivation);
+        }
 
         setLoading(false);
       }
@@ -77,6 +102,56 @@ export default function Home() {
 
     checkAuth();
   }, [router]);
+
+  // --- TIMER EFFECT: UPDATE CLIENT-SIDE REAL-TIME SETIAP 1 DETIK ---
+  useEffect(() => {
+    if (loading) return;
+
+    const updateTicker = () => {
+      const now = new Date();
+
+      // Selalu perbarui string tanggal hari ini (opsional dengan jam agar dinamis)
+      setTodayDate(now.toLocaleDateString('id-ID', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      }) + ' WIB');
+
+      if (rawLastSmokeDate) {
+        const msDiff = now.getTime() - rawLastSmokeDate.getTime();
+        const safeMsDiff = msDiff > 0 ? msDiff : 0;
+        setTotalMsElapsed(safeMsDiff);
+
+        // 1. Hitung Uang Dihemat (Proporsional berdasarkan pecahan hari)
+        const daysElapsed = safeMsDiff / (1000 * 60 * 60 * 24);
+        setMoneySaved(daysElapsed * dailyExpense);
+
+        // 2. Kalkulasi Breakdown Streak (Tahun, Bulan, Hari, Jam, Menit, Detik) Kalender Nyata
+        let years = now.getFullYear() - rawLastSmokeDate.getFullYear();
+        let months = now.getMonth() - rawLastSmokeDate.getMonth();
+        let days = now.getDate() - rawLastSmokeDate.getDate();
+        let hours = now.getHours() - rawLastSmokeDate.getHours();
+        let minutes = now.getMinutes() - rawLastSmokeDate.getMinutes();
+        let seconds = now.getSeconds() - rawLastSmokeDate.getSeconds();
+
+        if (seconds < 0) { seconds += 60; minutes--; }
+        if (minutes < 0) { minutes += 60; hours--; }
+        if (hours < 0) { hours += 24; days--; }
+        if (days < 0) {
+          const prevMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+          days += prevMonthDays;
+          months--;
+        }
+        if (months < 0) { months += 12; years--; }
+
+        setStreak({ years, months, days, hours, minutes, seconds });
+      }
+    };
+
+    updateTicker(); // Jalankan sekali di awal tanpa nunggu 1 detik
+    const intervalId = setInterval(updateTicker, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [loading, rawLastSmokeDate, dailyExpense]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -108,7 +183,6 @@ export default function Home() {
     transition: 'all 0.2s',
   };
 
-  // Helper untuk format Rupiah
   const formatRupiah = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -153,16 +227,63 @@ export default function Home() {
         <h3>Selamat Datang kembali, {profile?.full_name || user?.email}!</h3>
         <p>Anda berhasil login ke dalam sistem tracker stop-smoking.</p>
 
-        {/* --- KOTAK INFORMASI BARU YANG DIMINTA --- */}
+        {/* --- KOTAK INFORMASI TRACKER (DENGAN REAL-TIME STREAK & UANG DIHEMAT) --- */}
         <div style={{ backgroundColor: '#e6f7ff', border: '1px solid #91d5ff', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
           <h4 style={{ margin: '0 0 10px 0', color: '#0050b3' }}>Ringkasan Tracker:</h4>
           <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <li>📅 <strong>Tanggal Hari Ini:</strong> {todayDate}</li>
             <li>🚬 <strong>Terakhir Merokok:</strong> {lastSmokeDate || 'Belum ada data / Baru mulai'}</li>
             <li>💰 <strong>Anggaran Rokok / Hari:</strong> {formatRupiah(dailyExpense)}</li>
+            
+            {/* Tampilan Baru Elemen Real-time */}
+            <li style={{ borderTop: '1px dashed #91d5ff', paddingTop: '8px', marginTop: '4px' }}>
+              ⏱️ <strong>Streak Bebas Rokok:</strong>{' '}
+              {rawLastSmokeDate ? (
+                <span style={{ fontWeight: 'bold' }}>
+                  {streak.years} Tahun, {streak.months} Bulan, {streak.days} Hari, {streak.hours} Jam, {streak.minutes} Menit, {streak.seconds} Detik
+                </span>
+              ) : (
+                'Menghitung...'
+              )}
+            </li>
+            <li>
+              💸 <strong>Total Uang Dihemat:</strong>{' '}
+              <span style={{ fontWeight: 'bold', color: '#389e0d' }}>
+                {formatRupiah(moneySaved)}
+              </span>
+            </li>
           </ul>
         </div>
-        {/* ----------------------------------------- */}
+
+        {/* --- INTEGRASI ELEMEN KONTEN HARIAN (JSON) --- */}
+        <div style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
+          <h4 style={{ margin: '0 0 10px 0' }}>🎯 Tantangan & Motivasi Hari Ini</h4>
+          <p><strong>Misi:</strong> {challenge}</p>
+          <p style={{ fontStyle: 'italic', color: '#555' }}>"{motivation}"</p>
+        </div>
+
+        {/* --- INTEGRASI ELEMEN PROGRESS KESEHATAN (JSON) --- */}
+        <div style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
+          <h4 style={{ margin: '0 0 10px 0' }}>🚀 Status Pemulihan Fisik</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {timelineBenefits.map((benefit) => {
+              const isUnlocked = totalMsElapsed >= benefit.thresholdMs;
+              return (
+                <div 
+                  key={benefit.id} 
+                  style={{ 
+                    padding: '8px', 
+                    borderBottom: '1px dashed #eee',
+                    opacity: isUnlocked ? 1 : 0.5 
+                  }}
+                >
+                  <strong>{benefit.label}</strong> {isUnlocked ? '✅ Terlewati' : '🔒 Belum'}
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem' }}>{benefit.text}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         <div style={{ backgroundColor: '#f5f5f5', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
           <h4>Detail Akun Anda:</h4>
