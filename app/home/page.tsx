@@ -10,18 +10,22 @@ export default function Home() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // State baru untuk informasi tambahan
+  const [lastSmokeDate, setLastSmokeDate] = useState<string | null>(null);
+  const [dailyExpense, setDailyExpense] = useState<number>(30000);
+  const [todayDate, setTodayDate] = useState<string>('');
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
 
       if (error || !user) {
-        // Jika tidak terautentifikasi, lempar kembali ke landing page
         alert("Silahkan register/login terlebih dahulu");
         router.push('/');
       } else {
         setUser(user);
         
-        // Ambil data profil dari database untuk menyambut pengguna
+        // 1. Ambil data profil dari database
         const { data: profileData } = await supabase
           .from('profile')
           .select('*')
@@ -31,6 +35,42 @@ export default function Home() {
         if (profileData) {
           setProfile(profileData);
         }
+
+        // 2. Tarik informasi tanggal terakhir merokok (tabel public.last_smoke)
+        const { data: smokeData } = await supabase
+          .from('last_smoke')
+          .select('last_smoke')
+          .eq('profile_id', user.id)
+          .maybeSingle();
+
+        if (smokeData?.last_smoke) {
+          // Format tanggal agar lebih manusiawi (Contoh: 14 Juli 2026)
+          const formattedSmokeDate = new Date(smokeData.last_smoke).toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          });
+          setLastSmokeDate(formattedSmokeDate);
+        }
+
+        // 3. Ambil pengeluaran rokok per hari dari Local Storage (Default: Rp30.000)
+        const localExpense = localStorage.getItem('daily_smoke_expense');
+        if (localExpense) {
+          setDailyExpense(Number(localExpense));
+        } else {
+          // Set default ke local storage jika belum ada
+          localStorage.setItem('daily_smoke_expense', '30000');
+        }
+
+        // 4. Ambil tanggal hari ini secara client-side
+        const today = new Date().toLocaleDateString('id-ID', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+        setTodayDate(today);
+
         setLoading(false);
       }
     };
@@ -43,7 +83,6 @@ export default function Home() {
     router.push('/');
   };
 
-  // Fungsi pembantu untuk navigasi halaman
   const navigateTo = (path: string) => {
     router.push(path);
   };
@@ -56,7 +95,6 @@ export default function Home() {
     );
   }
 
-  // Style dasar untuk tombol navigasi menu agar rapi
   const navButtonStyle = {
     padding: '10px 14px',
     borderRadius: '6px',
@@ -68,6 +106,15 @@ export default function Home() {
     flex: 1,
     textAlign: 'center' as const,
     transition: 'all 0.2s',
+  };
+
+  // Helper untuk format Rupiah
+  const formatRupiah = (value: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(value);
   };
 
   return (
@@ -89,7 +136,7 @@ export default function Home() {
         </button>
       </header>
 
-      {/* Menu Navigasi Empat Tombol Baru */}
+      {/* Menu Navigasi Empat Tombol */}
       <nav style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', flexWrap: 'wrap' }}>
         <button 
           onClick={() => navigateTo('/home')} 
@@ -97,29 +144,25 @@ export default function Home() {
         >
           /home
         </button>
-        <button 
-          onClick={() => navigateTo('/profil')} 
-          style={navButtonStyle}
-        >
-          /profil
-        </button>
-        <button 
-          onClick={() => navigateTo('/progress')} 
-          style={navButtonStyle}
-        >
-          /progress
-        </button>
-        <button 
-          onClick={() => navigateTo('/exercise')} 
-          style={navButtonStyle}
-        >
-          /exercise
-        </button>
+        <button onClick={() => navigateTo('/profil')} style={navButtonStyle}>/profil</button>
+        <button onClick={() => navigateTo('/progress')} style={navButtonStyle}>/progress</button>
+        <button onClick={() => navigateTo('/exercise')} style={navButtonStyle}>/exercise</button>
       </nav>
 
       <section style={{ marginTop: '2rem' }}>
         <h3>Selamat Datang kembali, {profile?.full_name || user?.email}!</h3>
         <p>Anda berhasil login ke dalam sistem tracker stop-smoking.</p>
+
+        {/* --- KOTAK INFORMASI BARU YANG DIMINTA --- */}
+        <div style={{ backgroundColor: '#e6f7ff', border: '1px solid #91d5ff', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
+          <h4 style={{ margin: '0 0 10px 0', color: '#0050b3' }}>Ringkasan Tracker:</h4>
+          <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <li>📅 <strong>Tanggal Hari Ini:</strong> {todayDate}</li>
+            <li>🚬 <strong>Terakhir Merokok:</strong> {lastSmokeDate || 'Belum ada data / Baru mulai'}</li>
+            <li>💰 <strong>Anggaran Rokok / Hari:</strong> {formatRupiah(dailyExpense)}</li>
+          </ul>
+        </div>
+        {/* ----------------------------------------- */}
 
         <div style={{ backgroundColor: '#f5f5f5', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
           <h4>Detail Akun Anda:</h4>
