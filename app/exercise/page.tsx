@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
-export default function Home() {
+export default function Exercise() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -15,13 +15,11 @@ export default function Home() {
       const { data: { user }, error } = await supabase.auth.getUser();
 
       if (error || !user) {
-        // Jika tidak terautentifikasi, lempar kembali ke landing page
         alert("Silahkan register/login terlebih dahulu");
         router.push('/');
       } else {
         setUser(user);
         
-        // Ambil data profil dari database untuk menyambut pengguna
         const { data: profileData } = await supabase
           .from('profile')
           .select('*')
@@ -43,7 +41,6 @@ export default function Home() {
     router.push('/');
   };
 
-  // Fungsi pembantu untuk navigasi halaman
   const navigateTo = (path: string) => {
     router.push(path);
   };
@@ -56,7 +53,6 @@ export default function Home() {
     );
   }
 
-  // Style dasar untuk tombol navigasi menu agar rapi
   const navButtonStyle = {
     padding: '10px 14px',
     borderRadius: '6px',
@@ -67,68 +63,36 @@ export default function Home() {
     fontWeight: '600',
     flex: 1,
     textAlign: 'center' as const,
-    transition: 'all 0.2s',
   };
 
   return (
     <main style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
-        <h2>Dashboard Utama</h2>
-        <button 
-          onClick={handleLogout}
-          style={{ 
-            padding: '8px 16px', 
-            borderRadius: '4px', 
-            border: 'none', 
-            backgroundColor: '#ff4d4f', 
-            color: '#fff', 
-            cursor: 'pointer' 
-          }}
-        >
+        <h2>Craving Exercise</h2>
+        <button onClick={handleLogout} style={{ padding: '8px 16px', borderRadius: '4px', border: 'none', backgroundColor: '#ff4d4f', color: '#fff', cursor: 'pointer' }}>
           Keluar (Logout)
         </button>
       </header>
 
-      {/* Menu Navigasi Empat Tombol Baru */}
+      {/* Navigasi */}
       <nav style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-        <button 
-          onClick={() => navigateTo('/home')} 
-          style={{ ...navButtonStyle, backgroundColor: '#e6f7ff', borderColor: '#91d5ff', color: '#1890ff' }}
-        >
-          /home
-        </button>
-        <button 
-          onClick={() => navigateTo('/profil')} 
-          style={navButtonStyle}
-        >
-          /profil
-        </button>
-        <button 
-          onClick={() => navigateTo('/progress')} 
-          style={navButtonStyle}
-        >
-          /progress
-        </button>
-        <button 
-          onClick={() => navigateTo('/exercise')} 
-          style={navButtonStyle}
-        >
-          /exercise
-        </button>
+        <button onClick={() => navigateTo('/home')} style={navButtonStyle}>/home</button>
+        <button onClick={() => navigateTo('/profil')} style={navButtonStyle}>/profil</button>
+        <button onClick={() => navigateTo('/progress')} style={navButtonStyle}>/progress</button>
+        <button onClick={() => navigateTo('/exercise')} style={{ ...navButtonStyle, backgroundColor: '#e6f7ff', borderColor: '#91d5ff', color: '#1890ff' }}>/exercise</button>
       </nav>
 
       <section style={{ marginTop: '2rem' }}>
-        <h3>Selamat Datang kembali, {profile?.full_name || user?.email}!</h3>
-        <p>Anda berhasil login ke dalam sistem tracker stop-smoking.</p>
-
-        <div style={{ backgroundColor: '#f5f5f5', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
-          <h4>Detail Akun Anda:</h4>
-          <ul style={{ listStyleType: 'none', padding: 0 }}>
-            <li><strong>Nama Lengkap:</strong> {profile?.full_name || '-'}</li>
-            <li><strong>Username:</strong> {profile?.username || '-'}</li>
-            <li><strong>Email:</strong> {user?.email}</li>
-            <li><strong>UID Pengguna:</strong> {user?.id}</li>
-          </ul>
+        <h3>Latihan Penahan Hasrat Merokok</h3>
+        <p>Saat hasrat merokok melanda, coba lakukan latihan relaksasi pernapasan 4-7-8 untuk menenangkan sistem saraf Anda.</p>
+        
+        <div style={{ backgroundColor: '#fffbe6', border: '1px solid #ffe58f', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
+          <h4 style={{ margin: '0 0 10px 0', color: '#d46b08' }}>Tips Cepat:</h4>
+          <ol style={{ paddingLeft: '20px', margin: 0 }}>
+            <li>Tarik napas lewat hidung dalam 4 detik.</li>
+            <li>Tahan napas Anda selama 7 detik.</li>
+            <li>Hembuskan perlahan lewat mulut penuh dalam 8 detik.</li>
+          </ol>
         </div>
       </section>
     </main>

@@ -24,22 +24,29 @@ export default function Login() {
       const isEmail = email.includes('@');
 
       if (!isEmail) {
-        // Jika bukan email, cari email berdasarkan username di tabel profile
-        const { data, error } = await supabase
+        // 1 & 2. Cari username dan ambil email serta id di public.profile
+        const { data: profile, error: profileError } = await supabase
           .from('profile')
-          .select('email')
-          .eq('username', email)
+          .select('id, email')
+          .eq('username', email) // 'email' di sini adalah variabel input username dari user
           .maybeSingle();
 
-        if (error) {
-          throw new Error('Gagal memeriksa username: ' + error.message);
+        if (profileError) {
+          throw new Error('Gagal memeriksa username: ' + profileError.message);
         }
 
-        if (!data || !data.email) {
+        // Jika profile tidak ditemukan sama sekali
+        if (!profile) {
           throw new Error('Username tidak ditemukan!');
         }
 
-        email = data.email;
+        // Jika profile ada tapi email-nya kosong/belum diverifikasi
+        if (!profile.email) {
+          throw new Error('Username ditemukan, tetapi tidak ada email yang terikat.');
+        }
+
+        // Jika ketemu, oper email dari public.profile ke variabel login
+        email = profile.email;
       }
 
       // Lakukan login dengan email & password menggunakan Supabase auth
