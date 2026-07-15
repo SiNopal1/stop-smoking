@@ -4,6 +4,9 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
+// Beritahu Next.js untuk selalu me-render halaman ini di sisi server saat diakses (bukan saat build)
+export const dynamic = 'force-dynamic';
+
 export default function ChatRoom() {
   const router = useRouter();
   const searchParams = useSearchParams();
