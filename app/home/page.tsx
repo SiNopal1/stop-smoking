@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
+import Swal from 'sweetalert2'; // Mengimpor SweetAlert2
 
 // Impor data dari berkas JSON eksternal
 import timelineBenefits from './timeline.json';
@@ -14,17 +15,17 @@ export default function Home() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // State asli dari kamu
+  // State asli
   const [lastSmokeDate, setLastSmokeDate] = useState<string | null>(null);
   const [dailyExpense, setDailyExpense] = useState<number>(30000);
   const [todayDate, setTodayDate] = useState<string>('');
 
-  // State backend JSON dari tahap sebelumnya
+  // State backend JSON
   const [challenge, setChallenge] = useState<string>('Tidak ada challenge hari ini.');
   const [motivation, setMotivation] = useState<string>('Tetap semangat!');
   const [totalMsElapsed, setTotalMsElapsed] = useState<number>(0);
 
-  // --- STATE BARU UNTUK REAL-TIME STREAK & MONEY SAVED ---
+  // State real-time streak & money saved
   const [rawLastSmokeDate, setRawLastSmokeDate] = useState<Date | null>(null);
   const [moneySaved, setMoneySaved] = useState<number>(0);
   const [streak, setStreak] = useState({
@@ -66,7 +67,7 @@ export default function Home() {
 
         if (smokeData?.last_smoke) {
           const smokeDateObj = new Date(smokeData.last_smoke);
-          setRawLastSmokeDate(smokeDateObj); // Simpan objek date untuk ticker real-time
+          setRawLastSmokeDate(smokeDateObj);
           
           const formattedSmokeDate = smokeDateObj.toLocaleDateString('id-ID', {
             day: 'numeric',
@@ -110,7 +111,6 @@ export default function Home() {
     const updateTicker = () => {
       const now = new Date();
 
-      // Selalu perbarui string tanggal hari ini (opsional dengan jam agar dinamis)
       setTodayDate(now.toLocaleDateString('id-ID', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
         hour: '2-digit', minute: '2-digit', second: '2-digit'
@@ -121,11 +121,11 @@ export default function Home() {
         const safeMsDiff = msDiff > 0 ? msDiff : 0;
         setTotalMsElapsed(safeMsDiff);
 
-        // 1. Hitung Uang Dihemat (Proporsional berdasarkan pecahan hari)
+        // 1. Hitung Uang Dihemat
         const daysElapsed = safeMsDiff / (1000 * 60 * 60 * 24);
         setMoneySaved(daysElapsed * dailyExpense);
 
-        // 2. Kalkulasi Breakdown Streak (Tahun, Bulan, Hari, Jam, Menit, Detik) Kalender Nyata
+        // 2. Kalkulasi Breakdown Streak
         let years = now.getFullYear() - rawLastSmokeDate.getFullYear();
         let months = now.getMonth() - rawLastSmokeDate.getMonth();
         let days = now.getDate() - rawLastSmokeDate.getDate();
@@ -147,11 +147,74 @@ export default function Home() {
       }
     };
 
-    updateTicker(); // Jalankan sekali di awal tanpa nunggu 1 detik
+    updateTicker();
     const intervalId = setInterval(updateTicker, 1000);
 
     return () => clearInterval(intervalId);
   }, [loading, rawLastSmokeDate, dailyExpense]);
+
+  // --- FITUR BARU: RESET COUNTER TANGGAL TERAKHIR MEROKOK ---
+  const handleResetCounter = async () => {
+    if (!user) return;
+
+    // Tampilkan dialog konfirmasi SweetAlert
+    Swal.fire({
+      title: 'Apakah anda yakin?',
+      text: 'Streak bebas rokok Anda akan diulang dari detik ini!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ff4d4f',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Ya, Reset!',
+      cancelButtonText: 'Tidak',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const now = new Date();
+
+          // Kirim update ke database Supabase (menggunakan upsert agar aman jika baris belum ada)
+          const { error } = await supabase
+            .from('last_smoke')
+            .upsert(
+              { 
+                profile_id: user.id, 
+                last_smoke: now.toISOString() 
+              }, 
+              { onConflict: 'profile_id' }
+            );
+
+          if (error) throw error;
+
+          // Perbarui state lokal agar UI langsung bereaksi secara real-time
+          setRawLastSmokeDate(now);
+          setLastSmokeDate(
+            now.toLocaleDateString('id-ID', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })
+          );
+
+          // Beritahu pengguna bahwa proses berhasil
+          Swal.fire({
+            title: 'Berhasil di-reset!',
+            text: 'Mulai petualangan sehatmu kembali dari sekarang. Semangat!',
+            icon: 'success',
+            timer: 3000,
+            showConfirmButton: false
+          });
+
+        } catch (err: any) {
+          console.error(err);
+          Swal.fire(
+            'Gagal!',
+            'Gagal memperbarui data tracker. Silakan coba lagi nanti.',
+            'error'
+          );
+        }
+      }
+    });
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -210,7 +273,7 @@ export default function Home() {
         </button>
       </header>
 
-      {/* Menu Navigasi Empat Tombol */}
+      {/* Menu Navigasi */}
       <nav style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', flexWrap: 'wrap' }}>
         <button 
           onClick={() => navigateTo('/home')} 
@@ -227,7 +290,7 @@ export default function Home() {
         <h3>Selamat Datang kembali, {profile?.full_name || user?.email}!</h3>
         <p>Anda berhasil login ke dalam sistem tracker stop-smoking.</p>
 
-        {/* --- KOTAK INFORMASI TRACKER (DENGAN REAL-TIME STREAK & UANG DIHEMAT) --- */}
+        {/* --- KOTAK INFORMASI TRACKER --- */}
         <div style={{ backgroundColor: '#e6f7ff', border: '1px solid #91d5ff', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
           <h4 style={{ margin: '0 0 10px 0', color: '#0050b3' }}>Ringkasan Tracker:</h4>
           <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -235,7 +298,6 @@ export default function Home() {
             <li>🚬 <strong>Terakhir Merokok:</strong> {lastSmokeDate || 'Belum ada data / Baru mulai'}</li>
             <li>💰 <strong>Anggaran Rokok / Hari:</strong> {formatRupiah(dailyExpense)}</li>
             
-            {/* Tampilan Baru Elemen Real-time */}
             <li style={{ borderTop: '1px dashed #91d5ff', paddingTop: '8px', marginTop: '4px' }}>
               ⏱️ <strong>Streak Bebas Rokok:</strong>{' '}
               {rawLastSmokeDate ? (
@@ -253,16 +315,37 @@ export default function Home() {
               </span>
             </li>
           </ul>
+
+          {/* Tombol Reset Counter */}
+          <button
+            onClick={handleResetCounter}
+            style={{
+              marginTop: '15px',
+              width: '100%',
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ff4d4f',
+              backgroundColor: '#fff1f0',
+              color: '#ff4d4f',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#ffccc7')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#fff1f0')}
+          >
+            🔄 Reset Timer Merokok (Gagal Tahan Godaan)
+          </button>
         </div>
 
-        {/* --- INTEGRASI ELEMEN KONTEN HARIAN (JSON) --- */}
+        {/* --- INTEGRASI ELEMEN KONTEN HARIAN --- */}
         <div style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
           <h4 style={{ margin: '0 0 10px 0' }}>🎯 Tantangan & Motivasi Hari Ini</h4>
           <p><strong>Misi:</strong> {challenge}</p>
           <p style={{ fontStyle: 'italic', color: '#555' }}>"{motivation}"</p>
         </div>
 
-        {/* --- INTEGRASI ELEMEN PROGRESS KESEHATAN (JSON) --- */}
+        {/* --- INTEGRASI ELEMEN PROGRESS KESEHATAN --- */}
         <div style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
           <h4 style={{ margin: '0 0 10px 0' }}>🚀 Status Pemulihan Fisik</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
