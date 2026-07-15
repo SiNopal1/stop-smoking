@@ -4,6 +4,42 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
+// Konstanta Token Desain Zapier
+const TOKENS = {
+  colors: {
+    canvas: '#fffefb',       // Warm off-white background
+    canvasSoft: '#f8f4f0',   // Cream-tinted soft surface for cards
+    ink: '#201515',          // Deep coffee for headings and text
+    inkSoft: '#2f2a26',      // Near-black with brown warmth
+    body: '#605d52',         // Default body text color
+    bodyMid: '#939084',      // Secondary body / metadata
+    primary: '#ff4f00',      // Zapier Orange conversion accent
+  },
+  typography: {
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    displaySubSm: { fontSize: '24px', fontWeight: '600', lineHeight: '30px', color: '#201515' },
+    displayXs: { fontSize: '20px', fontWeight: '700', lineHeight: '25px', color: '#201515' },
+    bodyMd: { fontSize: '18px', fontWeight: '400', lineHeight: '27px', color: '#605d52' },
+    bodySm: { fontSize: '16px', fontWeight: '400', lineHeight: '24px', color: '#605d52' },
+    buttonMd: { fontSize: '18px', fontWeight: '600', lineHeight: '27px' },
+    buttonSm: { fontSize: '14.4px', fontWeight: '700', lineHeight: '14.4px' }
+  },
+  spacing: {
+    xs: '4px',
+    sm: '8px',
+    md: '12px',
+    lg: '16px',
+    xl: '24px',
+    xxl: '32px',
+    xxxxl: '64px'
+  },
+  rounded: {
+    sm: '6px',
+    md: '12px',
+    pill: '9999px'
+  }
+};
+
 export default function Profil() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
@@ -168,22 +204,18 @@ export default function Profil() {
 
       const file = e.target.files[0];
       const fileExt = file.name.split('.').pop();
-      // Gunakan nama file unik terstruktur
       const filePath = `${user.id}/${Date.now()}_avatar.${fileExt}`;
 
-      // 1. Unggah file ke Supabase Storage (Nama bucket: avatars)
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // 2. Dapatkan Public URL hasil upload
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      // 3. Update kolom profile_photo di DB
       const { error: updateError } = await supabase
         .from('profile')
         .update({ profile_photo: publicUrl })
@@ -209,7 +241,6 @@ export default function Profil() {
     try {
       setIsUploadingPhoto(true);
 
-      // Jalankan update untuk set profile_photo menjadi null di database
       const { error } = await supabase
         .from('profile')
         .update({ profile_photo: null })
@@ -234,7 +265,6 @@ export default function Profil() {
 
     const cleanUsername = username.trim().toLowerCase();
 
-    // Validasi input kosong
     if (!fullName.trim() || !cleanUsername) {
       alert("Nama Lengkap dan Username tidak boleh kosong.");
       setIsUpdatingProfile(false);
@@ -242,7 +272,6 @@ export default function Profil() {
     }
 
     try {
-      // Cek ketersediaan username hanya jika usernamenya diganti dari yang lama
       if (cleanUsername !== profile?.username?.toLowerCase()) {
         const { data: existingUser, error: checkError } = await supabase
           .from('profile')
@@ -259,7 +288,6 @@ export default function Profil() {
         }
       }
 
-      // Jalankan update ke tabel profile
       const { error: updateError } = await supabase
         .from('profile')
         .update({
@@ -361,51 +389,172 @@ export default function Profil() {
     router.push('/');
   };
 
-  const navButtonStyle = { padding: '10px 14px', borderRadius: '6px', border: '1px solid #ddd', backgroundColor: '#fff', color: '#333', cursor: 'pointer', fontWeight: '600', flex: 1, textAlign: 'center' as const };
-  const inputStyle = { padding: '8px', width: '70%', marginRight: '10px', borderRadius: '4px', border: '1px solid #ccc' };
+  // Penerapan Gaya Komponen Berdasarkan Aturan Desain
+  const styles = {
+    main: {
+      padding: `${TOKENS.spacing['2xl']} ${TOKENS.spacing.lg}`,
+      fontFamily: TOKENS.typography.fontFamily,
+      maxWidth: '640px',
+      margin: '0 auto',
+      backgroundColor: TOKENS.colors.canvas,
+      color: TOKENS.colors.body,
+      minHeight: '100vh'
+    },
+    header: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderBottom: `1px solid ${TOKENS.colors.ink}`,
+      paddingBottom: TOKENS.spacing.lg,
+      marginBottom: TOKENS.spacing.xl
+    },
+    profileBlock: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: TOKENS.spacing.md
+    },
+    avatarHeader: {
+      width: '56px',
+      height: '56px',
+      borderRadius: TOKENS.rounded.pill,
+      objectFit: 'cover' as const,
+      border: `1px solid ${TOKENS.colors.ink}`
+    },
+    navContainer: {
+      display: 'flex',
+      gap: TOKENS.spacing.sm,
+      marginTop: TOKENS.spacing.lg,
+      marginBottom: TOKENS.spacing['2xl'],
+      flexWrap: 'wrap' as const
+    },
+    // button-primary (Orange CTA)
+    btnPrimary: {
+      ...TOKENS.typography.buttonMd,
+      padding: `${TOKENS.spacing.md} ${TOKENS.spacing.xl}`,
+      borderRadius: TOKENS.rounded.md,
+      backgroundColor: TOKENS.colors.primary,
+      color: TOKENS.colors.canvas,
+      border: 'none',
+      cursor: 'pointer',
+      fontWeight: '600'
+    },
+    // button-secondary (Coffee Ink CTA)
+    btnSecondary: {
+      ...TOKENS.typography.buttonMd,
+      padding: `${TOKENS.spacing.md} ${TOKENS.spacing.xl}`,
+      borderRadius: TOKENS.rounded.md,
+      backgroundColor: TOKENS.colors.ink,
+      color: TOKENS.colors.canvas,
+      border: 'none',
+      cursor: 'pointer',
+      fontWeight: '600',
+      textAlign: 'center' as const
+    },
+    // button-tertiary (Outline CTA)
+    btnTertiary: {
+      ...TOKENS.typography.buttonMd,
+      padding: `${TOKENS.spacing.md} ${TOKENS.spacing.xl}`,
+      borderRadius: TOKENS.rounded.md,
+      backgroundColor: TOKENS.colors.canvas,
+      color: TOKENS.colors.ink,
+      border: `1px solid ${TOKENS.colors.ink}`,
+      cursor: 'pointer',
+      fontWeight: '600',
+      textAlign: 'center' as const
+    },
+    // button-text
+    btnText: {
+      ...TOKENS.typography.buttonSm,
+      backgroundColor: 'transparent',
+      color: TOKENS.colors.primary,
+      border: 'none',
+      cursor: 'pointer',
+      padding: '0 4px',
+      textDecoration: 'underline'
+    },
+    // card-content (Cream feature surface)
+    cardContent: {
+      backgroundColor: TOKENS.colors.canvasSoft,
+      color: TOKENS.colors.ink,
+      padding: TOKENS.spacing.xl,
+      borderRadius: TOKENS.rounded.md,
+      marginBottom: TOKENS.spacing.xl
+    },
+    // pricing-card style (Hairline border layout)
+    cardHairline: {
+      backgroundColor: TOKENS.colors.canvas,
+      color: TOKENS.colors.ink,
+      border: `1px solid ${TOKENS.colors.ink}`,
+      padding: TOKENS.spacing.xl,
+      borderRadius: TOKENS.rounded.md,
+      marginBottom: TOKENS.spacing.xl
+    },
+    // text-input
+    textInput: {
+      ...TOKENS.typography.bodyMd,
+      backgroundColor: TOKENS.colors.canvas,
+      color: TOKENS.colors.ink,
+      border: `1px solid ${TOKENS.colors.ink}`,
+      padding: `${TOKENS.spacing.md} ${TOKENS.spacing.lg}`,
+      borderRadius: TOKENS.rounded.sm,
+      width: '100%',
+      boxSizing: 'border-box' as const
+    },
+    formGroup: {
+      marginBottom: TOKENS.spacing.lg
+    },
+    inputLabel: {
+      display: 'block',
+      marginBottom: TOKENS.spacing.xs,
+      color: TOKENS.colors.ink,
+      fontWeight: '600',
+      ...TOKENS.typography.bodySm
+    }
+  };
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <main style={styles.main}>
+      <header style={styles.header}>
+        <div style={styles.profileBlock}>
           <img 
             src={avatarUrl || 'https://via.placeholder.com/50'} 
             alt="Avatar" 
-            style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #1890ff' }} 
+            style={styles.avatarHeader} 
           />
           <div>
-            <h2 style={{ margin: 0 }}>{profile?.full_name || 'User'}</h2>
-            <span style={{ color: '#888', fontSize: '0.9rem' }}>@{profile?.username || 'username'}</span>
+            <h2 style={{ margin: 0, ...TOKENS.typography.displayXs }}>{profile?.full_name || 'User'}</h2>
+            <span style={{ color: TOKENS.colors.bodyMid, ...TOKENS.typography.bodySm }}>@{profile?.username || 'username'}</span>
           </div>
         </div>
-        <button onClick={handleLogout} style={{ padding: '8px 16px', borderRadius: '4px', border: 'none', backgroundColor: '#ff4d4f', color: '#fff', cursor: 'pointer' }}>
+        <button 
+          onClick={handleLogout} 
+          style={{ ...styles.btnTertiary, padding: '8px 16px', ...TOKENS.typography.buttonSm }}
+        >
           Keluar
         </button>
       </header>
 
-      <nav style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-        <button onClick={() => router.push('/home')} style={navButtonStyle}>/home</button>
-        <button onClick={() => router.push('/profil')} style={{ ...navButtonStyle, backgroundColor: '#e6f7ff', borderColor: '#91d5ff', color: '#1890ff' }}>/profil</button>
-        <button onClick={() => router.push('/progress')} style={navButtonStyle}>/progress</button>
-        <button onClick={() => router.push('/exercise')} style={navButtonStyle}>/exercise</button>
+      <nav style={styles.navContainer}>
+        <button onClick={() => router.push('/home')} style={{ ...styles.btnTertiary, flex: 1, padding: '10px' }}>/home</button>
+        <button onClick={() => router.push('/profil')} style={{ ...styles.btnSecondary, flex: 1, padding: '10px' }}>/profil</button>
+        <button onClick={() => router.push('/progress')} style={{ ...styles.btnTertiary, flex: 1, padding: '10px' }}>/progress</button>
+        <button onClick={() => router.push('/exercise')} style={{ ...styles.btnTertiary, flex: 1, padding: '10px' }}>/exercise</button>
       </nav>
-
-      <section style={{ marginTop: '2rem' }}>
-        <p>📅 <strong>Hari Ini:</strong> {todayDate}</p>
-
-        {/* FITUR BARU: PANEL PENGATURAN IDENTITAS PROFIL */}
-        <div style={{ border: '1px solid #e8e8e8', padding: '15px', borderRadius: '8px', backgroundColor: '#fafafa', marginBottom: '1.5rem' }}>
-          <h4>⚙️ Edit Biodata & Foto Profil</h4>
+      <br />
+      <section>
+        {/* PANEL PENGATURAN IDENTITAS PROFIL */}
+        <div style={styles.cardContent}>
+          <h4 style={{ margin: `0 0 ${TOKENS.spacing.lg} 0`, ...TOKENS.typography.displaySubSm }}>Edit Biodata & Foto Profil</h4>
           
           {/* UPLOAD & HAPUS FOTO PROFIL */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px dashed #e8e8e8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: TOKENS.spacing.lg, marginBottom: TOKENS.spacing.xl, paddingBottom: TOKENS.spacing.lg, borderBottom: `1px dashed ${TOKENS.colors.bodyMid}` }}>
             <img 
               src={avatarUrl || 'https://via.placeholder.com/80'} 
               alt="Preview Avatar" 
-              style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', backgroundColor: '#ddd' }} 
+              style={{ width: '72px', height: '72px', borderRadius: TOKENS.rounded.pill, objectFit: 'cover', border: `1px solid ${TOKENS.colors.ink}` }} 
             />
             <div>
-              <label style={{ display: 'inline-block', padding: '6px 12px', backgroundColor: '#1890ff', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}>
+              <label style={{ ...styles.btnSecondary, display: 'inline-block', padding: '8px 16px', ...TOKENS.typography.buttonSm }}>
                 {isUploadingPhoto ? 'Mengunggah...' : 'Ubah Foto'}
                 <input type="file" accept="image/*" onChange={handleUploadPhoto} disabled={isUploadingPhoto} style={{ display: 'none' }} />
               </label>
@@ -413,7 +562,7 @@ export default function Profil() {
                 <button 
                   onClick={handleDeletePhoto}
                   disabled={isUploadingPhoto}
-                  style={{ marginLeft: '10px', padding: '6px 12px', backgroundColor: '#fff', color: '#ff4d4f', border: '1px solid #ff4d4f', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                  style={{ ...styles.btnTertiary, marginLeft: TOKENS.spacing.sm, padding: '8px 16px', ...TOKENS.typography.buttonSm }}
                 >
                   Hapus
                 </button>
@@ -422,97 +571,74 @@ export default function Profil() {
           </div>
 
           {/* EDIT NAMA LENGKAP & USERNAME */}
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '0.9rem' }}><strong>Nama Lengkap:</strong></label>
+          <div style={styles.formGroup}>
+            <label style={styles.inputLabel}>Nama Lengkap:</label>
             <input 
               type="text" 
               value={fullName} 
               onChange={(e) => setFullName(e.target.value)} 
-              style={{ ...inputStyle, width: '95%' }}
+              style={styles.textInput}
             />
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '0.9rem' }}><strong>Username (@):</strong></label>
+          <div style={{ ...styles.formGroup, marginBottom: TOKENS.spacing.xl }}>
+            <label style={styles.inputLabel}>Username (@):</label>
             <input 
               type="text" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
-              style={{ ...inputStyle, width: '95%' }}
+              style={styles.textInput}
             />
           </div>
 
           <button 
             onClick={handleUpdateProfileData}
             disabled={isUpdatingProfile}
-            style={{ width: '100%', padding: '10px', backgroundColor: '#1890ff', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
+            style={{ ...styles.btnPrimary, width: '100%' }}
           >
             {isUpdatingProfile ? 'Menyimpan...' : 'Simpan Perubahan Profil'}
           </button>
         </div>
 
-        {/* Informasi Status Tambahan */}
-        <div style={{ border: '1px solid #e8e8e8', padding: '15px', borderRadius: '8px', backgroundColor: '#fff' }}>
-          <p style={{ margin: 0 }}><strong>Terakhir Merokok Anda:</strong> {lastSmokeDate}</p>
-        </div>
-
         {/* Manajemen Kontak Sosial Sendiri */}
-        <div style={{ border: '1px solid #e8e8e8', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
-          <h4>🔗 Kontak Sosial Teman</h4>
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', marginBottom: '4px' }}><strong>WhatsApp:</strong></label>
-            <input type="text" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Contoh: 08123456789" style={inputStyle} />
-            {whatsapp && <button onClick={() => handleDeleteContact('whatsapp')} style={{ backgroundColor: '#ff4d4f', color: '#fff', border: 'none', padding: '8px', borderRadius: '4px', cursor: 'pointer' }}>Hapus</button>}
+        <div style={styles.cardContent}>
+          <h4 style={{ margin: `0 0 ${TOKENS.spacing.lg} 0`, ...TOKENS.typography.displaySubSm }}>Kontak Anda</h4>
+          
+          <div style={styles.formGroup}>
+            <label style={styles.inputLabel}>WhatsApp:</label>
+            <div style={{ display: 'flex', gap: TOKENS.spacing.sm }}>
+              <input type="text" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Contoh: 08123456789" style={styles.textInput} />
+              {whatsapp && <button onClick={() => handleDeleteContact('whatsapp')} style={{ ...styles.btnTertiary, padding: '12px' }}>Hapus</button>}
+            </div>
           </div>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '4px' }}><strong>Instagram Username:</strong></label>
-            <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="Contoh: naufal_aufa" style={inputStyle} />
-            {instagram && <button onClick={() => handleDeleteContact('instagram')} style={{ backgroundColor: '#ff4d4f', color: '#fff', border: 'none', padding: '8px', borderRadius: '4px', cursor: 'pointer' }}>Hapus</button>}
+          
+          <div style={{ ...styles.formGroup, marginBottom: TOKENS.spacing.xl }}>
+            <label style={styles.inputLabel}>Instagram Username:</label>
+            <div style={{ display: 'flex', gap: TOKENS.spacing.sm }}>
+              <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="Contoh: naufal_aufa" style={styles.textInput} />
+              {instagram && <button onClick={() => handleDeleteContact('instagram')} style={{ ...styles.btnTertiary, padding: '12px' }}>Hapus</button>}
+            </div>
           </div>
-          <button onClick={handleSaveContact} disabled={isSavingContact} style={{ width: '100%', padding: '10px', backgroundColor: '#52c41a', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}>
+          
+          <button onClick={handleSaveContact} disabled={isSavingContact} style={{ ...styles.btnPrimary, width: '100%' }}>
             {isSavingContact ? 'Menyimpan...' : 'Simpan / Perbarui Kontak'}
           </button>
         </div>
 
-        {/* Fitur Cari Teman */}
-        <div style={{ border: '1px solid #e8e8e8', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
-          <h4>🔍 Cari Teman Baru</h4>
-          <div style={{ display: 'flex' }}>
-            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari username teman..." style={inputStyle} />
-            <button onClick={handleSearchFriend} style={{ padding: '8px 16px', backgroundColor: '#1890ff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Cari</button>
-          </div>
-          {searchMessage && <p style={{ color: '#ff4d4f', fontSize: '0.85rem', marginTop: '5px' }}>{searchMessage}</p>}
-          {searchResult && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '6px', marginTop: '10px', border: '1px dashed #ccc' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <img src={searchResult.profile_photo || 'https://via.placeholder.com/40'} alt={searchResult.username} style={{ width: '35px', height: '35px', borderRadius: '50%', objectFit: 'cover' }} />
-                <strong>@{searchResult.username}</strong>
-              </div>
-              {searchResult.existingConn ? (
-                <span style={{ fontSize: '0.85rem', color: '#888', fontStyle: 'italic' }}>
-                  {searchResult.existingConn.is_accepted ? 'Sudah Berteman' : 'Permintaan Tertunda'}
-                </span>
-              ) : (
-                <button onClick={() => handleSendRequest(searchResult.id)} style={{ padding: '6px 12px', backgroundColor: '#52c41a', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>Tambah Teman</button>
-              )}
-            </div>
-          )}
-        </div>
-
         {/* Undangan Masuk */}
-        <div style={{ border: '1px solid #e8e8e8', padding: '15px', borderRadius: '8px', marginTop: '1.5rem', backgroundColor: '#fffbe6', borderColor: '#ffe58f' }}>
-          <h4>📩 Undangan Teman Masuk ({incomingRequests.length})</h4>
+        <div style={{ ...styles.cardContent, border: `1px solid ${TOKENS.colors.ink}` }}>
+          <h4 style={{ margin: `0 0 ${TOKENS.spacing.lg} 0`, ...TOKENS.typography.displaySubSm }}>📩 Undangan Teman Masuk ({incomingRequests.length})</h4>
           {incomingRequests.length === 0 ? (
-            <p style={{ color: '#888', fontStyle: 'italic', margin: 0, fontSize: '0.85rem' }}>Tidak ada undangan pertemanan baru.</p>
+            <p style={{ color: TOKENS.colors.bodyMid, fontStyle: 'italic', margin: 0, ...TOKENS.typography.bodySm }}>Tidak ada undangan pertemanan baru.</p>
           ) : (
             <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
               {incomingRequests.map((req, idx) => (
-                <li key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <img src={req.profile_photo || 'https://via.placeholder.com/40'} alt={req.username} style={{ width: '35px', height: '35px', borderRadius: '50%', objectFit: 'cover' }} />
-                    <strong>@{req.username}</strong>
+                <li key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `${TOKENS.spacing.sm} 0`, borderBottom: `1px solid ${TOKENS.colors.bodyMid}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: TOKENS.spacing.sm }}>
+                    <img src={req.profile_photo || 'https://via.placeholder.com/40'} alt={req.username} style={{ width: '36px', height: '36px', borderRadius: TOKENS.rounded.pill, objectFit: 'cover' }} />
+                    <strong style={{ color: TOKENS.colors.ink }}>@{req.username}</strong>
                   </div>
-                  <button onClick={() => handleAcceptRequest(req.connectionTableId)} style={{ padding: '6px 12px', backgroundColor: '#52c41a', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>Accept</button>
+                  <button onClick={() => handleAcceptRequest(req.connectionTableId)} style={{ ...styles.btnPrimary, padding: '8px 16px', ...TOKENS.typography.buttonSm }}>Accept</button>
                 </li>
               ))}
             </ul>
@@ -520,28 +646,54 @@ export default function Profil() {
         </div>
 
         {/* Daftar Teman Aktif */}
-        <div style={{ border: '1px solid #e8e8e8', padding: '15px', borderRadius: '8px', marginTop: '1.5rem' }}>
-          <h4>👥 Status Bebas Asap Teman ({friends.length})</h4>
+        <div style={styles.cardHairline}>
+          <h4 style={{ margin: `0 0 ${TOKENS.spacing.lg} 0`, ...TOKENS.typography.displaySubSm }}>👥 Status Bebas Asap Teman ({friends.length})</h4>
           {friends.length === 0 ? (
-            <p style={{ color: '#888', fontStyle: 'italic', margin: 0 }}>Belum memiliki teman terhubung.</p>
+            <p style={{ color: TOKENS.colors.bodyMid, fontStyle: 'italic', margin: 0, ...TOKENS.typography.bodySm }}>Belum memiliki teman terhubung.</p>
           ) : (
-            <ul style={{ listStyleType: 'none', padding: 0 }}>
+            <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
               {friends.map((friend, idx) => (
-                <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid #eee' }}>
-                  <img src={friend.profile_photo || 'https://via.placeholder.com/40'} alt={friend.username} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', backgroundColor: '#ccc' }} />
+                <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: TOKENS.spacing.md, padding: `${TOKENS.spacing.md} 0`, borderBottom: `1px solid ${TOKENS.colors.canvasSoft}` }}>
+                  <img src={friend.profile_photo || 'https://via.placeholder.com/40'} alt={friend.username} style={{ width: '40px', height: '40px', borderRadius: TOKENS.rounded.pill, objectFit: 'cover', border: `1px solid ${TOKENS.colors.ink}` }} />
                   <div>
-                    <strong style={{ display: 'block' }}>@{friend.username}</strong>
-                    <span style={{ fontSize: '0.85rem', color: '#555' }}>
+                    <strong style={{ display: 'block', color: TOKENS.colors.ink }}>@{friend.username}</strong>
+                    <span style={{ ...TOKENS.typography.bodySm, color: TOKENS.colors.body }}>
                       {`🔥 ${friend.streak} | `}
-                      {friend.roomId && <button onClick={() => router.push(`/chat?room=${friend.roomId}&name=${friend.username}`)} style={{ background: 'none', border: 'none', color: '#52c41a', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}>chat</button>}
+                      {friend.roomId && <button onClick={() => router.push(`/chat?room=${friend.roomId}&name=${friend.username}`)} style={styles.btnText}>chat</button>}
                       {(friend.whatsapp || friend.instagram) && ' | '}
-                      {friend.whatsapp && <a href={`https://wa.me/${friend.whatsapp}`} target="_blank" rel="noopener noreferrer" style={{ color: '#1890ff', textDecoration: 'none', marginRight: '8px', fontWeight: 'bold' }}>wa</a>}
-                      {friend.instagram && <a href={`https://instagram.com/${friend.instagram}`} target="_blank" rel="noopener noreferrer" style={{ color: '#1890ff', textDecoration: 'none', fontWeight: 'bold' }}>ig</a>}
+                      {friend.whatsapp && <a href={`https://wa.me/${friend.whatsapp}`} target="_blank" rel="noopener noreferrer" style={{ color: TOKENS.colors.ink, fontWeight: 'bold', textDecoration: 'underline', marginRight: TOKENS.spacing.sm }}>wa</a>}
+                      {friend.instagram && <a href={`https://instagram.com/${friend.instagram}`} target="_blank" rel="noopener noreferrer" style={{ color: TOKENS.colors.ink, fontWeight: 'bold', textDecoration: 'underline' }}>ig</a>}
                     </span>
                   </div>
                 </li>
               ))}
             </ul>
+          )}
+        </div>
+
+        {/* Fitur Cari Teman */}
+        <div style={styles.cardHairline}>
+          <h4 style={{ margin: `0 0 ${TOKENS.spacing.lg} 0`, ...TOKENS.typography.displaySubSm }}>🔍 Cari Teman Baru</h4>
+          <div style={{ display: 'flex', gap: TOKENS.spacing.sm, marginBottom: TOKENS.spacing.sm }}>
+            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari username teman..." style={{ ...styles.textInput, flex: 1 }} />
+            <button onClick={handleSearchFriend} style={styles.btnSecondary}>Cari</button>
+          </div>
+          {searchMessage && <p style={{ color: TOKENS.colors.primary, ...TOKENS.typography.bodySm, margin: `${TOKENS.spacing.xs} 0 0 0` }}>{searchMessage}</p>}
+          
+          {searchResult && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: TOKENS.spacing.md, backgroundColor: TOKENS.colors.canvasSoft, borderRadius: TOKENS.rounded.md, marginTop: TOKENS.spacing.md, border: `1px dashed ${TOKENS.colors.ink}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: TOKENS.spacing.sm }}>
+                <img src={searchResult.profile_photo || 'https://via.placeholder.com/40'} alt={searchResult.username} style={{ width: '36px', height: '36px', borderRadius: TOKENS.rounded.pill, objectFit: 'cover' }} />
+                <strong style={{ color: TOKENS.colors.ink }}>@{searchResult.username}</strong>
+              </div>
+              {searchResult.existingConn ? (
+                <span style={{ ...TOKENS.typography.bodySm, color: TOKENS.colors.bodyMid, fontStyle: 'italic' }}>
+                  {searchResult.existingConn.is_accepted ? 'Sudah Berteman' : 'Permintaan Tertunda'}
+                </span>
+              ) : (
+                <button onClick={() => handleSendRequest(searchResult.id)} style={{ ...styles.btnPrimary, padding: '8px 16px', ...TOKENS.typography.buttonSm }}>Tambah Teman</button>
+              )}
+            </div>
           )}
         </div>
       </section>

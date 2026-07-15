@@ -163,142 +163,153 @@ export default function Exercise() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif' }}>
-        <p>Memuat halaman...</p>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#fffefb', color: '#201515', fontFamily: '"Inter", sans-serif' }}>
+        <p style={{ fontSize: '18px', fontWeight: '500' }}>Memuat halaman...</p>
       </div>
     );
   }
 
   const navButtonStyle = {
-    padding: '10px 14px',
-    borderRadius: '6px',
-    border: '1px solid #ddd',
-    backgroundColor: '#fff',
-    color: '#333',
+    padding: '12px 24px',
+    borderRadius: '12px',
+    border: '1px solid #201515',
+    backgroundColor: '#fffefb',
+    color: '#201515',
     cursor: 'pointer',
     fontWeight: '600',
+    fontSize: '14.4px',
     flex: 1,
     textAlign: 'center' as const,
+    transition: 'all 0.2s ease',
   };
 
   const btnControlStyle = {
-    padding: '10px 20px',
-    borderRadius: '6px',
+    padding: '12px 24px',
+    borderRadius: '12px',
     border: 'none',
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontSize: '18px',
     cursor: 'pointer',
-    flex: 1
+    flex: 1,
+    transition: 'all 0.2s ease',
   };
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto', color: '#333' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
-        <h2>Craving Exercise</h2>
-        <button onClick={handleLogout} style={{ padding: '8px 16px', borderRadius: '4px', border: 'none', backgroundColor: '#ff4d4f', color: '#fff', cursor: 'pointer' }}>
-          Keluar (Logout)
-        </button>
-      </header>
-
-      {/* Navigasi */}
-      <nav style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-        <button onClick={() => navigateTo('/home')} style={navButtonStyle}>/home</button>
-        <button onClick={() => navigateTo('/profil')} style={navButtonStyle}>/profil</button>
-        <button onClick={() => navigateTo('/progress')} style={navButtonStyle}>/progress</button>
-        <button onClick={() => navigateTo('/exercise')} style={{ ...navButtonStyle, backgroundColor: '#e6f7ff', borderColor: '#91d5ff', color: '#1890ff' }}>/exercise</button>
-      </nav>
-
-      {/* Fitur Pelacak Olahraga Penahan Hasrat */}
-      <section style={{ marginTop: '2rem', border: '1px solid #e8e8e8', padding: '20px', borderRadius: '8px', backgroundColor: '#fafafa' }}>
-        <h3 style={{ margin: '0 0 15px 0' }}>Fitur Pelacak Olahraga</h3>
+    <div style={{ backgroundColor: '#fffefb', minHeight: '100vh' }}>
+      <main style={{ padding: '4rem 2rem', fontFamily: '"Inter", sans-serif', maxWidth: '800px', margin: '0 auto', color: '#201515' }}>
         
-        {/* Input Kilogram & Jenis Olahraga */}
-        <div style={{ display: 'flex', gap: '15px', marginBottom: '15px', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '120px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px', fontWeight: '600' }}>Berat Badan (kg):</label>
-            <input 
-              type="number" 
-              value={beratBadan} 
-              onChange={(e) => setBeratBadan(e.target.value)}
-              disabled={isTracking}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box' }}
-            />
-          </div>
+        {/* Header */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #c5c0b1', paddingBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '32px', fontWeight: '500', margin: 0 }}>Craving Exercise</h2>
+          <button 
+            onClick={handleLogout} 
+            style={{ padding: '8px 16px', borderRadius: '12px', border: '1px solid #201515', backgroundColor: '#fffefb', color: '#201515', cursor: 'pointer', fontWeight: '600', fontSize: '14.4px' }}
+          >
+            Keluar (Logout)
+          </button>
+        </header>
+
+        {/* Navigasi */}
+        <nav style={{ display: 'flex', gap: '12px', marginTop: '2rem', flexWrap: 'wrap' }}>
+          <button onClick={() => navigateTo('/home')} style={navButtonStyle}>/home</button>
+          <button onClick={() => navigateTo('/profil')} style={navButtonStyle}>/profil</button>
+          <button onClick={() => navigateTo('/progress')} style={navButtonStyle}>/progress</button>
+          <button onClick={() => navigateTo('/exercise')} style={{ ...navButtonStyle, backgroundColor: '#201515', color: '#fffefb', border: '1px solid #201515' }}>/exercise</button>
+        </nav>
+
+        {/* Fitur Pelacak Olahraga Penahan Hasrat */}
+        <section style={{ marginTop: '3rem', border: 'none', padding: '24px', borderRadius: '12px', backgroundColor: '#f8f4f0' }}>
+          <h3 style={{ fontSize: '24px', fontWeight: '600', margin: '0 0 24px 0', letterSpacing: '-0.6px' }}>Fitur Pelacak Olahraga</h3>
           
-          <div style={{ flex: 1, minWidth: '150px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px', fontWeight: '600' }}>Jenis Olahraga:</label>
-            <select 
-              value={jenisOlahraga} 
-              onChange={(e) => setJenisOlahraga(e.target.value)}
-              disabled={isTracking}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', backgroundColor: '#fff', boxSizing: 'border-box' }}
-            >
-              <option value="berjalan">Jalan Kaki (MET: 3.5)</option>
-              <option value="jogging">Jogging / Lari (MET: 7.0)</option>
-              <option value="bersepeda">Bersepeda (MET: 5.5)</option>
-              <option value="senam">Senam / Kalistenik (MET: 4.0)</option>
-              <option value="pernapasan">Napas Dalam 4-7-8 (MET: 1.3)</option>
-            </select>
+          {/* Input Kilogram & Jenis Olahraga */}
+          <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '120px' }}>
+              <label style={{ display: 'block', fontSize: '16px', marginBottom: '8px', fontWeight: '600', color: '#36342e' }}>Berat Badan (kg):</label>
+              <input 
+                type="number" 
+                value={beratBadan} 
+                onChange={(e) => setBeratBadan(e.target.value)}
+                disabled={isTracking}
+                style={{ width: '100%', padding: '12px 16px', borderRadius: '6px', border: '1px solid #201515', backgroundColor: '#fffefb', color: '#201515', boxSizing: 'border-box', fontSize: '16px', fontFamily: '"Inter", sans-serif' }}
+              />
+            </div>
+            
+            <div style={{ flex: 1, minWidth: '150px' }}>
+              <label style={{ display: 'block', fontSize: '16px', marginBottom: '8px', fontWeight: '600', color: '#36342e' }}>Jenis Olahraga:</label>
+              <select 
+                value={jenisOlahraga} 
+                onChange={(e) => setJenisOlahraga(e.target.value)}
+                disabled={isTracking}
+                style={{ width: '100%', padding: '12px 16px', borderRadius: '6px', border: '1px solid #201515', backgroundColor: '#fffefb', color: '#201515', boxSizing: 'border-box', fontSize: '16px', fontFamily: '"Inter", sans-serif' }}
+              >
+                <option value="berjalan">Jalan Kaki (MET: 3.5)</option>
+                <option value="jogging">Jogging / Lari (MET: 7.0)</option>
+                <option value="bersepeda">Bersepeda (MET: 5.5)</option>
+                <option value="senam">Senam / Kalistenik (MET: 4.0)</option>
+                <option value="pernapasan">Napas Dalam 4-7-8 (MET: 1.3)</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        {/* Stopwatch & Kalori Display */}
-        <div style={{ textAlign: 'center', padding: '20px 0', borderTop: '1px dashed #ccc', borderBottom: '1px dashed #ccc', margin: '20px 0' }}>
-          <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'monospace', color: isTracking ? '#52c41a' : '#555' }}>
-            {formatWaktu(detikBerjalan)}
+          {/* Stopwatch & Kalori Display */}
+          <div style={{ textAlign: 'center', padding: '32px 0', borderTop: '1px solid #c5c0b1', borderBottom: '1px solid #c5c0b1', margin: '32px 0' }}>
+            <div style={{ fontSize: '56px', fontWeight: '500', color: isTracking ? '#ff4f00' : '#201515', transition: 'color 0.3s ease' }}>
+              {formatWaktu(detikBerjalan)}
+            </div>
+            <div style={{ fontSize: '18px', marginTop: '12px', color: '#605d52' }}>
+              Kalori Terbakar: <strong style={{ color: '#ff4f00', fontSize: '24px', fontWeight: '600' }}>{kaloriTerbakar.toFixed(2)}</strong> kcal
+            </div>
           </div>
-          <div style={{ fontSize: '16px', marginTop: '5px', color: '#666' }}>
-            Kalori Terbakar: <strong style={{ color: '#fa8c16', fontSize: '20px' }}>{kaloriTerbakar.toFixed(2)}</strong> kcal
-          </div>
-        </div>
 
-        {/* Tombol Kontrol */}
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {!isTracking ? (
-            <button onClick={handleStart} style={{ ...btnControlStyle, backgroundColor: '#52c41a', color: '#fff' }}>Mulai</button>
+          {/* Tombol Kontrol */}
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            {!isTracking ? (
+              <button onClick={handleStart} style={{ ...btnControlStyle, backgroundColor: '#ff4f00', color: '#fffefb' }}>Mulai</button>
+            ) : (
+              <button onClick={handleStop} style={{ ...btnControlStyle, backgroundColor: '#201515', color: '#fffefb' }}>Berhenti</button>
+            )}
+            
+            <button onClick={handleSimpanLatihan} disabled={isTracking || detikBerjalan === 0} style={{ ...btnControlStyle, backgroundColor: '#201515', color: '#fffefb', opacity: (isTracking || detikBerjalan === 0) ? 0.4 : 1 }}>
+              Simpan Data
+            </button>
+            
+            <button onClick={handleReset} disabled={isTracking} style={{ ...btnControlStyle, backgroundColor: '#fffefb', color: '#201515', border: '1px solid #201515', opacity: isTracking ? 0.4 : 1 }}>
+              Reset
+            </button>
+          </div>
+        </section>
+
+        {/* Tampilan Riwayat Latihan dari Local Storage */}
+        <section style={{ marginTop: '4rem' }}>
+          <h3 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '16px', letterSpacing: '-0.6px' }}>Riwayat Latihan Anda</h3>
+          {riwayatLatihan.length === 0 ? (
+            <p style={{ color: '#939084', fontSize: '16px' }}>Belum ada data latihan yang disimpan.</p>
           ) : (
-            <button onClick={handleStop} style={{ ...btnControlStyle, backgroundColor: '#faad14', color: '#fff' }}>Berhenti</button>
-          )}
-          
-          <button onClick={handleSimpanLatihan} disabled={isTracking || detikBerjalan === 0} style={{ ...btnControlStyle, backgroundColor: '#1890ff', color: '#fff', opacity: (isTracking || detikBerjalan === 0) ? 0.5 : 1 }}>
-            Simpan Data
-          </button>
-          
-          <button onClick={handleReset} disabled={isTracking} style={{ ...btnControlStyle, backgroundColor: '#d9d9d9', color: '#333', opacity: isTracking ? 0.5 : 1 }}>
-            Reset
-          </button>
-        </div>
-      </section>
-
-      {/* Tampilan Riwayat Latihan dari Local Storage */}
-      <section style={{ marginTop: '2rem' }}>
-        <h3>Riwayat Latihan Anda</h3>
-        {riwayatLatihan.length === 0 ? (
-          <p style={{ color: '#888', fontStyle: 'italic' }}>Belum ada data latihan yang disimpan.</p>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem', fontSize: '14px' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#f0f0f0', textAlign: 'left' }}>
-                  <th style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>Tanggal</th>
-                  <th style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>Olahraga</th>
-                  <th style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>Durasi</th>
-                  <th style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>Kalori</th>
-                </tr>
-              </thead>
-              <tbody>
-                {riwayatLatihan.map((item) => (
-                  <tr key={item.id}>
-                    <td style={{ padding: '8px', borderBottom: '1px solid #eee', fontSize: '12px' }}>{item.tanggal}</td>
-                    <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>{item.jenisOlahraga} <span style={{ fontSize: '11px', color: '#888' }}>({item.beratBadan}kg)</span></td>
-                    <td style={{ padding: '8px', borderBottom: '1px solid #eee', fontWeight: '600' }}>{item.durasi}</td>
-                    <td style={{ padding: '8px', borderBottom: '1px solid #eee', color: '#fa8c16', fontWeight: '600' }}>{item.kalori} kcal</td>
+            <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid #c5c0b1' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '16px', backgroundColor: '#fffefb' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f8f4f0', textAlign: 'left' }}>
+                    <th style={{ padding: '16px', borderBottom: '1px solid #c5c0b1', fontWeight: '600', color: '#201515' }}>Tanggal</th>
+                    <th style={{ padding: '16px', borderBottom: '1px solid #c5c0b1', fontWeight: '600', color: '#201515' }}>Olahraga</th>
+                    <th style={{ padding: '16px', borderBottom: '1px solid #c5c0b1', fontWeight: '600', color: '#201515' }}>Durasi</th>
+                    <th style={{ padding: '16px', borderBottom: '1px solid #c5c0b1', fontWeight: '600', color: '#201515' }}>Kalori</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-    </main>
+                </thead>
+                <tbody>
+                  {riwayatLatihan.map((item, index) => (
+                    <tr key={item.id}>
+                      <td style={{ padding: '16px', borderBottom: index === riwayatLatihan.length - 1 ? 'none' : '1px solid #e8e6df', color: '#605d52', fontSize: '14px' }}>{item.tanggal}</td>
+                      <td style={{ padding: '16px', borderBottom: index === riwayatLatihan.length - 1 ? 'none' : '1px solid #e8e6df', color: '#201515' }}>{item.jenisOlahraga} <span style={{ fontSize: '14px', color: '#939084' }}>({item.beratBadan}kg)</span></td>
+                      <td style={{ padding: '16px', borderBottom: index === riwayatLatihan.length - 1 ? 'none' : '1px solid #e8e6df', fontWeight: '600', color: '#201515' }}>{item.durasi}</td>
+                      <td style={{ padding: '16px', borderBottom: index === riwayatLatihan.length - 1 ? 'none' : '1px solid #e8e6df', color: '#ff4f00', fontWeight: '600' }}>{item.kalori} kcal</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </main>
+    </div>
   );
 }

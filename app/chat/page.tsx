@@ -105,77 +105,106 @@ function ChatContent() {
     }
   };
 
-  if (loading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Memuat obrolan...</p>;
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#fffefb', color: '#201515', fontFamily: '"Inter", sans-serif' }}>
+        <p style={{ fontSize: '18px', fontWeight: '500' }}>Memuat obrolan...</p>
+      </div>
+    );
+  }
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
-      <header style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
-        <button onClick={() => router.push('/profil')} style={{ cursor: 'pointer', padding: '5px 10px' }}>⬅ Kembali</button>
-        <h2 style={{ margin: 0 }}>Obrolan dengan {friendName}</h2>
-      </header>
+    <div style={{ backgroundColor: '#fffefb', minHeight: '100vh' }}>
+      <main style={{ padding: '4rem 2rem', fontFamily: '"Inter", sans-serif', maxWidth: '800px', margin: '0 auto', color: '#201515' }}>
+        
+        {/* Header */}
+        <header style={{ display: 'flex', alignItems: 'center', gap: '16px', borderBottom: '1px solid #c5c0b1', paddingBottom: '1.5rem' }}>
+          <button 
+            onClick={() => router.push('/profil')} 
+            style={{ padding: '8px 16px', borderRadius: '12px', border: '1px solid #201515', backgroundColor: '#fffefb', color: '#201515', cursor: 'pointer', fontWeight: '600', fontSize: '14.4px' }}
+          >
+            ⬅ Kembali
+          </button>
+          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '500' }}>Obrolan dengan {friendName}</h2>
+        </header>
 
-      <div style={{ height: '60vh', overflowY: 'auto', backgroundColor: '#f9f9f9', padding: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {messages.length === 0 ? (
-            <p style={{ textAlign: 'center', color: '#888', margin: 'auto' }}>Belum ada pesan. Sapa temanmu!</p>
-        ) : (
-            messages.map((msg) => {
-            const isMe = msg.sender === userId;
+        {/* Chat Area */}
+        <div style={{ height: '60vh', overflowY: 'auto', backgroundColor: '#f8f4f0', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', borderRadius: '12px', marginTop: '2rem' }}>
+          {messages.length === 0 ? (
+              <p style={{ textAlign: 'center', color: '#939084', margin: 'auto', fontSize: '16px' }}>Belum ada pesan. Sapa temanmu!</p>
+          ) : (
+              messages.map((msg) => {
+              const isMe = msg.sender === userId;
 
-            const dapatkanWaktuLokal = (timeStr: string) => {
-                if (!timeStr) return '';
-                let formatUtc = timeStr;
-                if (!formatUtc.endsWith('Z') && !formatUtc.includes('+')) {
-                  formatUtc = formatUtc.replace(' ', 'T') + 'Z';
-                }
-                return new Date(formatUtc).toLocaleTimeString('id-ID', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false
-                });
-            };
+              const dapatkanWaktuLokal = (timeStr: string) => {
+                  if (!timeStr) return '';
+                  let formatUtc = timeStr;
+                  if (!formatUtc.endsWith('Z') && !formatUtc.includes('+')) {
+                    formatUtc = formatUtc.replace(' ', 'T') + 'Z';
+                  }
+                  return new Date(formatUtc).toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                  });
+              };
 
-            return (
-                <div key={msg.chat_id} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '75%' }}>
-                <div style={{
-                    backgroundColor: isMe ? '#e6f7ff' : '#fff',
-                    border: `1px solid ${isMe ? '#91d5ff' : '#ddd'}`,
-                    padding: '10px',
-                    borderRadius: '8px',
-                    borderBottomRightRadius: isMe ? '0' : '8px',
-                    borderBottomLeftRadius: !isMe ? '0' : '8px'
-                }}>
-                    {msg.message}
-                </div>
-                <div style={{ fontSize: '10px', color: '#888', marginTop: '4px', textAlign: isMe ? 'right' : 'left' }}>
-                    {dapatkanWaktuLokal(msg.time_sent)}
-                </div>
-                </div>
-            );
-            })
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+              return (
+                  <div key={msg.chat_id} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '75%' }}>
+                    <div style={{
+                        backgroundColor: isMe ? '#201515' : '#fffefb',
+                        color: isMe ? '#fffefb' : '#201515',
+                        border: isMe ? 'none' : '1px solid #c5c0b1',
+                        padding: '12px 16px',
+                        borderRadius: '12px',
+                        borderBottomRightRadius: isMe ? '0' : '12px',
+                        borderBottomLeftRadius: !isMe ? '0' : '12px',
+                        fontSize: '16px',
+                        lineHeight: '1.5'
+                    }}>
+                        {msg.message}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#939084', marginTop: '6px', textAlign: isMe ? 'right' : 'left' }}>
+                        {dapatkanWaktuLokal(msg.time_sent)}
+                    </div>
+                  </div>
+              );
+              })
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-      <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Ketik pesan..."
-          style={{ flex: 1, padding: '10px', borderRadius: '20px', border: '1px solid #ccc' }}
-        />
-        <button type="submit" style={{ padding: '10px 20px', borderRadius: '20px', backgroundColor: '#1890ff', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
-          Kirim
-        </button>
-      </form>
-    </main>
+        {/* Input Form */}
+        <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '12px', marginTop: '1.5rem' }}>
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Ketik pesan..."
+            style={{ flex: 1, padding: '12px 16px', borderRadius: '6px', border: '1px solid #201515', backgroundColor: '#fffefb', color: '#201515', fontSize: '16px', fontFamily: '"Inter", sans-serif' }}
+          />
+          <button 
+            type="submit" 
+            style={{ padding: '12px 24px', borderRadius: '12px', backgroundColor: '#ff4f00', color: '#fffefb', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '16px', transition: 'opacity 0.2s' }}
+            onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+            onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+          >
+            Kirim
+          </button>
+        </form>
+      </main>
+    </div>
   );
 }
 
 // 2. Eksport komponen utama sebagai pembungkus Suspense
 export default function ChatRoom() {
   return (
-    <Suspense fallback={<p style={{ textAlign: 'center', marginTop: '2rem' }}>Memuat halaman chat...</p>}>
+    <Suspense fallback={
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#fffefb', color: '#201515', fontFamily: '"Inter", sans-serif' }}>
+        <p style={{ fontSize: '18px', fontWeight: '500' }}>Memuat halaman chat...</p>
+      </div>
+    }>
       <ChatContent />
     </Suspense>
   );

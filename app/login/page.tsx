@@ -69,51 +69,70 @@ export default function Login() {
   };
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '320px', margin: '0 auto' }}>
-      <h2>Masuk ke Akun</h2>
-      {errorMsg && (
-        <div style={{ color: 'red', marginBottom: '10px', fontSize: '14px' }}>
-          {errorMsg}
+    <div style={{ backgroundColor: '#fffefb', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: '"Inter", sans-serif' }}>
+      <main style={{ width: '100%', maxWidth: '450px', backgroundColor: '#f8f4f0', padding: '32px', borderRadius: '12px', color: '#201515' }}>
+        <h2 style={{ fontSize: '32px', fontWeight: '500', margin: '0 0 8px 0', letterSpacing: '-0.6px' }}>Masuk ke Akun</h2>
+        <p style={{ color: '#605d52', fontSize: '16px', margin: '0 0 24px 0' }}>Selamat datang kembali. Silakan masukkan kredensial Anda.</p>
+        
+        {errorMsg && (
+          <div style={{ backgroundColor: '#fffefb', border: '1px solid #ff4f00', color: '#ff4f00', padding: '12px 16px', borderRadius: '6px', marginBottom: '20px', fontSize: '14px', fontWeight: '500' }}>
+            ⚠️ {errorMsg}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <input
+            type="text"
+            placeholder="Username atau Email"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            required
+            style={{ width: '100%', padding: '12px 16px', borderRadius: '6px', border: '1px solid #201515', backgroundColor: '#fffefb', color: '#201515', boxSizing: 'border-box', fontSize: '16px' }}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{ width: '100%', padding: '12px 16px', borderRadius: '6px', border: '1px solid #201515', backgroundColor: '#fffefb', color: '#201515', boxSizing: 'border-box', fontSize: '16px' }}
+          />
+          <button 
+            type="submit" 
+            disabled={loading}
+            style={{ 
+              width: '100%', 
+              padding: '14px', 
+              borderRadius: '12px', 
+              border: 'none', 
+              backgroundColor: '#ff4f00', 
+              color: '#fffefb', 
+              fontSize: '18px', 
+              fontWeight: '600', 
+              cursor: loading ? 'not-allowed' : 'pointer',
+              marginTop: '8px',
+              opacity: loading ? 0.6 : 1,
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {loading ? 'Memproses...' : 'Masuk'}
+          </button>
+        </form>
+
+        <div style={{ borderTop: '1px solid #c5c0b1', marginTop: '24px', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+          <p style={{ margin: 0, fontSize: '16px', color: '#605d52' }}>
+            Belum punya akun?{' '}
+            <Link href="/register" style={{ color: '#ff4f00', fontWeight: '600', textDecoration: 'none' }}>
+              Daftar di sini
+            </Link>
+          </p>
+          <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
+            <Link href="/" style={{ color: '#939084', textDecoration: 'none' }}>
+              ← Kembali ke Beranda
+            </Link>
+          </p>
         </div>
-      )}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <input
-          type="text"
-          placeholder="Username atau Email"
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
-          required
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <button 
-          type="submit" 
-          disabled={loading}
-          style={{ 
-            padding: '10px', 
-            borderRadius: '4px', 
-            border: 'none', 
-            backgroundColor: '#0070f3', 
-            color: '#fff', 
-            cursor: loading ? 'not-allowed' : 'pointer' 
-          }}
-        >
-          {loading ? 'Memproses...' : 'Masuk'}
-        </button>
-      </form>
-      <p style={{ marginTop: '15px', fontSize: '14px' }}>
-        Belum punya akun? <Link href="/register" style={{ color: '#0070f3' }}>Daftar di sini</Link>
-      </p>
-      <p style={{ fontSize: '14px' }}>
-        <Link href="/" style={{ color: '#666' }}>Kembali ke Beranda</Link>
-      </p>
-    </main>
+      </main>
+    </div>
   );
 }
